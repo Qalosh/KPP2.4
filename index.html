@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <title>Matrix Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/alpinejs" defer></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen p-4">
+  <div x-data="chatApp()" class="bg-white p-6 rounded shadow-md w-full max-w-2xl">
+    <!-- Форма входу -->
+    <template x-if="!accessToken">
+      <div>
+        <h2 class="text-xl font-bold mb-4">Увійти</h2>
+        <input x-model="username" placeholder="Ім'я користувача"
+               class="border p-2 w-full mb-2 rounded" />
+        <input x-model="password" type="password" placeholder="Пароль"
+               class="border p-2 w-full mb-2 rounded" />
+        <button @click="login()" class="bg-blue-500 text-white p-2 w-full rounded">Увійти</button>
+        <p x-text="error" class="text-red-500 mt-2"></p>
+      </div>
+    </template>
+
+    <!-- Панель після авторизації -->
+    <template x-if="accessToken">
+      <div class="flex flex-col h-[550px]">
+        <h1 class="text-2xl font-bold mb-4">Ви успішно авторизувались. Ваша панель керування</h1>
+
+        <!-- User ID -->
+        <div class="mb-4 p-2 bg-gray-200 rounded text-sm break-words">
+          <span class="font-bold">Ваш Matrix ID:</span>
+          <span x-text="userId ? userId : 'Завантаження...'"></span>
+        </div>
+
+        <!-- Резюме користувача -->
+        <div class="flex-1 bg-gray-50 p-4 rounded border">
+          <h2 class="text-lg font-semibold mb-2">Про мене (резюме)</h2>
+          <p class="text-gray-700">
+            Привіт! Мене звати Шкробот Артем. Я студент, який вивчає веб-розробку та технології PWA.
+            Маю досвід у HTML, CSS, JavaScript, а також знайомий з фреймворками, такими як Alpine.js та Tailwind CSS.
+            Цікавлюся створенням сучасних, адаптивних та безпечних веб-додатків.
+          </p>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <script>
+    function chatApp() {
+      return {
+        username: '',
+        password: '',
+        accessToken: '',
+        userId: '',
+        error: '',
+
+        async login() {
+          this.error = '';
+          try {
+            const res = await fetch('https://matrix.org/_matrix/client/r0/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: 'm.login.password',
+                user: this.username,
+                password: this.password
+              })
+            });
+
+            const data = await res.json();
+
+            if (data.access_token) {
+              this.accessToken = data.access_token;
+              this.userId = data.user_id;
+            } else {
+              this.error = 'Невірне ім’я користувача або пароль';
+            }
+          } catch (e) {
+            this.error = 'Помилка під час входу';
+            console.error(e);
+          }
+        }
+      };
+    }
+  </script>
+</body>
+</html>
