@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Matrix Chat</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/alpinejs" defer></script>
@@ -38,17 +38,17 @@
   <div x-data="chatApp()" class="chat-container bg-white rounded-lg shadow-lg flex w-full max-w-5xl">
     <!-- Контейнер для сайдбару -->
     <div id="sidebar-container"></div>
+
     <!-- Контейнер для основної області чату -->
     <div class="chat-area p-4 flex flex-col">
-      <!-- Контейнер для логіну -->
+      <!-- Контейнер для компонента логіну або головної панелі -->
       <div id="login-container"></div>
     </div>
   </div>
 
   <script>
-    // Завантаження HTML-шаблонів після завантаження DOM
+    // Завантаження компонентів після завантаження DOM
     document.addEventListener('DOMContentLoaded', () => {
-      // Завантаження login.html
       fetch('./login.html')
         .then(response => response.text())
         .then(html => {
@@ -56,7 +56,6 @@
         })
         .catch(error => console.error('Error loading login:', error));
 
-      // Завантаження sidebar.html
       fetch('./sidebar.html')
         .then(response => response.text())
         .then(html => {
@@ -83,10 +82,20 @@
         inviteUser: '',
         error: '',
         lastSyncToken: '',
+
+        // Методи підключаються зовні (login.js, sidebar.js)
         login,
         createRoom,
         fetchRoomsWithNames,
-      }
+        switchRoom(roomId) {
+          this.roomId = roomId;
+          this.messages = [];
+          this.fetchMessages();
+        },
+        fetchMessages() {
+          // Тимчасова заглушка — можна реалізувати пізніше
+        }
+      };
     }
   </script>
 </body>
