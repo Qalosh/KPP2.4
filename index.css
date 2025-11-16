@@ -1,0 +1,40 @@
+/* Основні стилі для каркасу сторінки */
+html {
+    height: 100%;
+}
+
+.index-container {
+    height: 100vh; /* Використовуємо 100vh для заповнення висоти вікна */
+    width: 100%;
+}
+
+/* Стилі для основного контейнера чату після логіну */
+.chat-app-logged-in {
+    height: 100vh;
+    border-radius: 0; 
+    box-shadow: none;
+    background-color: white; 
+    display: flex; 
+    width: 100%; 
+}
+
+/* Стилі для списку кімнат у сайдбарі */
+.room-list ul li {
+    padding: 8px;
+    transition: background-color 0.2s;
+}
+
+.room-list ul li:hover {
+    background-color: #e0e7ff; 
+}
+
+.room-list ul li.active {
+    background-color: #bfdbfe; 
+    font-weight: 500;
+}
+
+/* Стилі для прокрутки списку кімнат */
+.sidebar-list {
+    height: 76vh;
+    overflow-y: scroll;
+}

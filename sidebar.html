@@ -1,22 +1,32 @@
 <template x-if="accessToken">
-  <div class="sidebar p-4 bg-gray-50 border-r border-gray-200 overflow-y-auto">
-    <h2 class="text-xl font-bold mb-4">Rooms</h2>
-    <div class="room-list space-y-1 px-4">
-      <template x-for="room in rooms" :key="room.roomId">
-        <li
-          @click="switchRoom(room.roomId)"
-          :class="{ 'active': room.roomId === roomId }"
-          x-text="room.name || room.roomId"
-          class="cursor-pointer rounded-lg"
-        ></li>
-      </template>
+    <div class="sidebar p-4 bg-gray-50 h-full flex flex-col">
+        <h2 class="text-xl font-bold mb-4">Rooms</h2>
+        
+        <div class="room-list flex-1 overflow-y-auto space-y-2 mb-4">
+            <ul class="sidebar-list"> <template x-for="room in rooms" :key="room.roomId">
+                    <li @click="switchRoom(room.roomId)" 
+                        :class="{'active': room.roomId === roomId, 'cursor-pointer rounded-lg': true}" 
+                        class="p-3 shadow-sm"
+                        x-text="room.name"
+                    ></li>
+                </template>
+                <template x-if="rooms.length === 0">
+                    <p class="text-gray-500 text-center text-sm py-4">No rooms joined.</p>
+                </template>
+            </ul>
+        </div>
+
+        <form @submit.prevent="createRoom()" class="mt-auto pt-4 border-t border-gray-200">
+            <input x-model="newRoomName" placeholder="New room name" class="border p-2 w-full mb-1 rounded focus:ring-2 focus:ring-blue-500">
+            <button type="submit" :disabled="!newRoomName.trim()" class="bg-blue-500 text-white p-2 w-full rounded hover:bg-blue-600 transition disabled:opacity-50">
+                Create Room
+            </button>
+        </form>
+
+        <div class="mt-4 pt-4 border-t border-gray-200">
+            <button @click="localStorage.clear(); accessToken = ''; userId = ''; rooms = []; messages = []; roomId = ''; roomMembers = [];" class="bg-red-500 text-white p-2 w-full rounded hover:bg-red-600 transition">
+                Logout
+            </button>
+        </div>
     </div>
-    <div class="mt-4">
-      <input x-model="newRoomName" placeholder="New room name" class="border p-2 w-full mb-2 rounded">
-      <button @click="createRoom()" class="bg-indigo-500 text-white p-2 w-full rounded hover:bg-indigo-600 transition">
-        Create Room
-      </button>
-      <p x-show="newRoomId" class="text-sm text-gray-600 mt-1">Room ID: <span x-text="newRoomId"></span></p>
-    </div>
-  </div>
 </template>

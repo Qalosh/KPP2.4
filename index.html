@@ -1,102 +1,95 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
-  <meta charset="UTF-8" />
-  <title>Matrix Chat</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/alpinejs" defer></script>
-  <script src="./login.js"></script>
-  <script src="./sidebar.js"></script>
-
-  <style>
-    .chat-container {
-      min-height: 80vh;
-    }
-    .sidebar {
-      min-width: 250px;
-    }
-    .chat-area {
-      flex-grow: 1;
-    }
-    .message-input {
-      min-height: 80px;
-    }
-    .room-list li {
-      padding: 8px;
-      transition: background-color 0.2s;
-    }
-    .room-list li:hover {
-      background-color: #e0e7ff;
-    }
-    .room-list li.active {
-      background-color: #bfdbfe;
-      font-weight: 500;
-    }
-  </style>
-</head>
-<body class="bg-gray-100 flex items-center justify-center p-4">
-  <div x-data="chatApp()" class="chat-container bg-white rounded-lg shadow-lg flex w-full max-w-5xl">
-    <!-- Контейнер для сайдбару -->
-    <div id="sidebar-container"></div>
-
-    <!-- Контейнер для основної області чату -->
-    <div class="chat-area p-4 flex flex-col">
-      <!-- Контейнер для компонента логіну або головної панелі -->
-      <div id="login-container"></div>
+    <meta charset="UTF-8">
+    <title>Matrix Chat App (КП2-8)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x" defer></script>
+    
+    <link rel="stylesheet" href="index.css"> 
+    <link rel="stylesheet" href="login.css">
+    
+    <script src="./login.js"></script>
+    <script src="./sidebar.js"></script>
+    <script src="./chat.js"></script>
+    <script src="./user.js"></script> </head>
+<body class="index-container bg-gray-100 flex justify-center"> <div x-data="chatApp()" x-init="fetchMessages()" :class="accessToken ? 'chat-app-logged-in' : 'w-full'" class="flex w-full"> <div id="sidebar-container" x-show="accessToken" class="w-1/4 min-w-[280px] border-r border-gray-200 overflow-y-auto"></div>
+        
+        <div class="flex-1 flex flex-col relative">
+            
+            <div id="login-container" x-show="!accessToken" class="absolute inset-0 bg-white bg-opacity-95 flex items-center justify-center z-10 p-4"></div>
+            
+            <div id="chat-container" x-show="accessToken" class="h-full w-full flex"></div>
+            
+            <div x-show="error" @click="error=''" class="absolute top-2 right-2 p-2 bg-red-500 text-white rounded shadow-lg cursor-pointer transition">
+                <span x-text="error"></span>
+            </div>
+        </div>
+        
+        <div id="user-container" x-show="accessToken" class="w-1/4 min-w-[280px] border-l border-gray-200 overflow-y-auto"></div>
     </div>
-  </div>
 
-  <script>
-    // Завантаження компонентів після завантаження DOM
-    document.addEventListener('DOMContentLoaded', () => {
-      fetch('./login.html')
-        .then(response => response.text())
-        .then(html => {
-          document.getElementById('login-container').innerHTML = html;
-        })
-        .catch(error => console.error('Error loading login:', error));
-
-      fetch('./sidebar.html')
-        .then(response => response.text())
-        .then(html => {
-          document.getElementById('sidebar-container').innerHTML = html;
-        })
-        .catch(error => console.error('Error loading sidebar:', error));
-    });
-  </script>
-
-  <script>
-    function chatApp() {
-      return {
-        username: '',
-        password: '',
-        accessToken: '',
-        userId: '',
-        roomId: '',
-        joinRoomId: '',
-        newRoomName: '',
-        newRoomId: '',
-        rooms: [],
-        messages: [],
-        newMessage: '',
-        inviteUser: '',
-        error: '',
-        lastSyncToken: '',
-
-        // Методи підключаються зовні (login.js, sidebar.js)
-        login,
-        createRoom,
-        fetchRoomsWithNames,
-        switchRoom(roomId) {
-          this.roomId = roomId;
-          this.messages = [];
-          this.fetchMessages();
-        },
-        fetchMessages() {
-          // Тимчасова заглушка — можна реалізувати пізніше
+    <script>
+        function chatApp() {
+            return {
+                username: '',
+                password: '',
+                accessToken: localStorage.getItem('accessToken') || '', 
+                userId: localStorage.getItem('userId') || '',
+                
+                roomId: '', 
+                joinRoomId: '', 
+                newRoomName: '',
+                rooms: [], 
+                messages: [], 
+                newMessage: '', 
+                inviteUser: '', 
+                lastSyncToken: '',
+                roomMembers: [], // НОВА ВЛАСТИВІСТЬ
+                error: '',
+                
+                login,
+                createRoom,
+                fetchRoomsWithNames,
+                joinRoom, 
+                inviteUserToRoom, 
+                getRoomName, 
+                switchRoom, 
+                sendMessage, 
+                fetchMessages, 
+                fetchRoomMembers // НОВИЙ МЕТОД
+            }
         }
-      };
-    }
-  </script>
+
+        // Завантаження HTML-шаблонів
+        document.addEventListener('DOMContentLoaded', () => {
+            const templates = [
+                { id: 'login-container', file: './login.html' },
+                { id: 'sidebar-container', file: './sidebar.html' },
+                { id: 'chat-container', file: './chat.html' }, 
+                { id: 'user-container', file: './user.html' } // НОВИЙ КОМПОНЕНТ
+            ];
+
+            templates.forEach(t => {
+                fetch(t.file)
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById(t.id).innerHTML = html;
+                    })
+                    .catch(error => console.error(`Error loading ${t.file}:`, error));
+            });
+        });
+
+        // Додавання функції копіювання до Alpine.js
+        Alpine.magic('clipboard', () => {
+            return subject => {
+                navigator.clipboard.writeText(subject).then(() => {
+                    alert('Copied to clipboard: ' + subject);
+                }).catch(err => {
+                    console.error('Could not copy text: ', err);
+                });
+            }
+        });
+    </script>
 </body>
 </html>
